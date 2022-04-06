@@ -1,0 +1,47 @@
+<launch>
+
+    <!-- <node name="update_frame_id" pkg="depth_image_proc" type="update_frame_id.py" output="screen" /> -->
+
+    <!-- Nodelet manager for this pipeline -->
+    <node pkg="nodelet" type="nodelet" args="manager" name="standalone_nodelet" output="screen"/>
+
+    <node pkg="nodelet" type="nodelet" name="downsample_depth" args="standalone image_proc/crop_decimate">
+        <param name="decimation_x" type="int" value="2"/>
+        <param name="decimation_y" type="int" value="2"/>
+
+        <!-- remap input topics -->
+        <remap from="camera/image_raw" to="/camera/aligned_depth_to_infra1/image_raw"/>
+        <remap from="camera/image_info" to="/camera/infra1/camera_info"/>
+        <!-- remap output topics -->
+        <remap from="camera_out/image_raw" to="image_depth_in"/>
+        <remap from="camera_info" to="depth_camera_info_in"/>
+    </node>
+
+    <!-- Convert to point cloud -->
+    <node pkg="nodelet" type="nodelet" name="depth_image_proc" args="load depth_image_proc/point_cloud_xyz standalone_nodelet --no-bond">
+   
+        <!--remap from your specific sensors-->         
+
+        <!-- Input: Camera calibration and metadata.  (sensor_msgs/CameraInfo) -->
+        <remap from="camera_info" to="depth_camera_info_in"/>
+
+        <!-- Input: Rectified color image. (sensor_msgs/Image) -->
+        <!-- <remap from="rgb/image_rect_color" to="/camera/infra1/image_rect_raw"/> -->
+
+        <!-- Input: Rectified depth image, registered to the RGB camera. (sensor_msgs/Image) -->
+        <remap from="image_rect" to="image_depth_in"/>
+
+        <!-- Output: XYZ point cloud. If using PCL, subscribe as PointCloud<PointXYZ>.  (sensor_msgs/PointCloud2)  -->
+        <!-- <remap from="depth_registered/points" to="/point_cloud/points"/> -->
+
+    </node>
+
+  <!-- Publishes the voxel grid to rviz for display -->
+<!--   <node pkg="costmap_2d" type="costmap_2d_markers" name="voxel_visualizer">
+    <remap from="voxel_grid" to="costmap/voxel_grid"/>
+  </node>
+  <node name="costmap_node" pkg="costmap_2d" type="costmap_2d_node" >
+    <rosparam file="$(find viso2_ros)/launch/example_params.yaml" command="load" ns="costmap" />
+  </node> -->
+
+</launch>

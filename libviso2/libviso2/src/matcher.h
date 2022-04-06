@@ -59,7 +59,7 @@ public:
 
     // default settings
     parameters () {
-      nms_n                  = 3;
+      nms_n                  = 20;
       nms_tau                = 50;
       match_binsize          = 50;
       match_radius           = 200;

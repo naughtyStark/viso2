@@ -124,7 +124,6 @@ protected:
       const sensor_msgs::CameraInfoConstPtr& l_info_msg,
       const sensor_msgs::CameraInfoConstPtr& r_info_msg)
   {
-    ros::WallTime start_time = ros::WallTime::now();
     bool first_run = false;
     // create odometer if not exists
     if (!visual_odometer_)
@@ -165,8 +164,12 @@ protected:
     }
     else
     {
+      ros::WallTime start_time = ros::WallTime::now();
+
       bool success = visual_odometer_->process(
           l_image_data, r_image_data, dims, change_reference_frame_);
+      ros::WallDuration time_elapsed = ros::WallTime::now() - start_time;
+
       if (success)
       {
         Matrix motion = Matrix::inv(visual_odometer_->getMotion());
@@ -259,7 +262,6 @@ protected:
       info_msg.change_reference_frame = !change_reference_frame_;
       info_msg.num_matches = visual_odometer_->getNumberOfMatches();
       info_msg.num_inliers = visual_odometer_->getNumberOfInliers();
-      ros::WallDuration time_elapsed = ros::WallTime::now() - start_time;
       info_msg.runtime = time_elapsed.toSec();
       info_pub_.publish(info_msg);
     }
